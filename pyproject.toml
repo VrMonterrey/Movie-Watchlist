@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "moviewatchlist"
+version = "0.1.0"
+description = ""
+authors = ["Oleksandr Chaban"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+flask = "^2.3.3"
+flask-dotenv = "^0.1.2"
+python-dotenv = "^1.0.0"
+pymongo = "^4.5.0"
+black = "^23.9.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
