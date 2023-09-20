@@ -11,7 +11,7 @@ load_dotenv()
 def create_app():
     app = Flask(__name__)
     app.config["MONGODB_URI"] = os.environ.get("MONGODB_URI")
-    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "")
+    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "Alex")
     client = MongoClient(app.config["MONGODB_URI"])
     app.db = client['Alexander23']
     app.register_blueprint(pages)
