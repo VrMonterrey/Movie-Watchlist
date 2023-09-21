@@ -8,6 +8,7 @@ from flask import (
     redirect,
     request,
     url_for,
+    abort,
 )
 from movie_library.forms import MovieForm
 from movie_library.models import Movie
@@ -19,7 +20,9 @@ pages = Blueprint(
 
 @pages.route("/")
 def index():
-    return render_template("index.html", title="Movies watchlist")
+    movie_data = current_app.db.movie.find({})
+    movies = [Movie(**movie) for movie in movie_data]
+    return render_template("index.html", title="Movies watchlist", movies_data=movies)
 
 
 @pages.route("/add", methods=["GET", "POST"])
@@ -42,6 +45,13 @@ def add_movie():
         "new_movie.html", title="Movie Watchlist - Add Movie", form=form
     )
 
+@pages.get("/movie/<string:_id>")
+def movie(_id: str):
+    movie_data = current_app.db.movie.find_one({"_id": _id})
+    if not movie_data:
+        abort(404)
+    movie = Movie(**movie_data)
+    return render_template("movie_details.html", movie=movie)
 
 @pages.get("/toggle-theme")
 def toggle_theme():
