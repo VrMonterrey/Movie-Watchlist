@@ -1,5 +1,6 @@
 import uuid
 import datetime
+import functools
 from dataclasses import asdict
 from flask import (
     Blueprint,
@@ -12,7 +13,7 @@ from flask import (
     abort,
     flash,
 )
-from movie_library.forms import MovieForm, ExtendedMovieForm, RegisterForm
+from movie_library.forms import MovieForm, ExtendedMovieForm, RegisterForm, LoginForm
 from movie_library.models import Movie, User
 from passlib.hash import pbkdf2_sha256
 
@@ -21,10 +22,24 @@ pages = Blueprint(
 )
 
 
-@pages.route("/")
+def login_required(route):
+    @functools.wraps(route)
+    def route_wrapper(*args, **kwargs):
+        if session.get("email") is None:
+            return redirect(url_for(".login"))
+        return route(*args, **kwargs)
+
+    return route_wrapper
+
+
+@pages.get("/")
 def index():
-    movie_data = current_app.db.movie.find({})
-    movies = [Movie(**movie) for movie in movie_data]
+    movies = []
+    if session.get("email"):
+        user_data = current_app.db.user.find_one({"email": session["email"]})
+        user = User(**user_data)
+        movie_data = current_app.db.movie.find({"_id": {"$in": user.movies}})
+        movies = [Movie(**movie) for movie in movie_data]
     return render_template("index.html", title="Movies watchlist", movies_data=movies)
 
 
@@ -45,14 +60,48 @@ def register():
 
         flash("User registered successfully", "success")
 
-        return redirect(url_for(".index"))
+        return redirect(url_for(".login"))
 
     return render_template(
         "register.html", title="Movies Watchlist - Register", form=form
     )
 
 
+@pages.post("/logout")
+def logout():
+    current_theme = session.get("theme")
+    session.clear()
+    session["theme"] = current_theme
+    return redirect(url_for(".index"))
+
+
+@pages.route("/login", methods=["GET", "POST"])
+def login():
+    if session.get("email"):
+        return redirect(url_for(".index"))
+
+    form = LoginForm()
+
+    if form.validate_on_submit():
+        user_data = current_app.db.user.find_one({"email": form.email.data})
+        if not user_data:
+            flash("Login credentials not correct", category="danger")
+            return redirect(url_for(".login"))
+        user = User(**user_data)
+
+        if user and pbkdf2_sha256.verify(form.password.data, user.password):
+            session["user_id"] = user._id
+            session["email"] = user.email
+
+            return redirect(url_for(".index"))
+
+        flash("Login credentials not correct", category="danger")
+
+    return render_template("login.html", title="Movie Watchlist - Login", form=form)
+
+
 @pages.route("/add", methods=["GET", "POST"])
+@login_required
 def add_movie():
     form = MovieForm()
 
@@ -65,6 +114,9 @@ def add_movie():
         )
 
         current_app.db.movie.insert_one(asdict(movie))
+        current_app.db.user.update_one(
+            {"_id": session["user_id"]}, {"$push": {"movies": movie._id}}
+        )
 
         return redirect(url_for(".index"))
 
@@ -74,6 +126,7 @@ def add_movie():
 
 
 @pages.route("/edit/<string:_id>", methods=["GET", "POST"])
+@login_required
 def edit_movie(_id: str):
     movie_data = current_app.db.movie.find_one({"_id": _id})
     if not movie_data:
@@ -105,6 +158,7 @@ def movie(_id: str):
 
 
 @pages.get("/movie/<string:_id>/rate")
+@login_required
 def rate_movie(_id):
     rating = int(request.args.get("rating"))
     current_app.db.movie.update_one({"_id": _id}, {"$set": {"rating": rating}})
@@ -112,6 +166,7 @@ def rate_movie(_id):
 
 
 @pages.get("/movie/<string:_id>/watch")
+@login_required
 def watch_today(_id):
     current_app.db.movie.update_one(
         {"_id": _id}, {"$set": {"last_watched": datetime.datetime.today()}}

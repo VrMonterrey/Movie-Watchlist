@@ -32,7 +32,11 @@
             </tbody>
         </table>
     {% else %}
-        <p class="table__empty">You haven't added any movies yet. <a href="{{ url_for('pages.add_movie') }}" class="link">Add one!</a></p>
+    {% if email %}
+        <p class="table__empty">You haven't added any movies yet.<a href="{{ url_for('pages.add_movie') }}" class="link"> Add one!</a>
+    {% else %}
+        <p class="table__empty">Log in to see your movies.<a href="{{ url_for('pages.login') }}" class="link"> Login!</a></p>
+    {% endif %}
     {% endif %}
     <a href="{{ url_for('pages.add_movie') }}" class="button button--add">
         <span>+</span>

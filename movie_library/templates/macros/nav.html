@@ -10,14 +10,15 @@
         <nav class="nav">
             {% if not email %}
                 <a
-                    href="#"
-                    class="nav__link"
+                    href="{{ url_for("pages.login") }}"
+                    class="nav__link {{'nav__link--active' if request.path == url_for('pages.login') }}"                
                 >
                     <span class="nav__item">Log in</span>
                 </a>
                 <a
                     href="{{ url_for("pages.register") }}"
-                    class="nav__link {{'nav__link--active' if request.path == url_for('pages.register') }}"                >
+                    class="nav__link {{'nav__link--active' if request.path == url_for('pages.register') }}"                
+                >
                     <span class="nav__item">Register</span>
                 </a>
             {% else %}
@@ -27,12 +28,9 @@
                 >
                     <span class="nav__item">Movies</span>
                 </a>
-                <a
-                    href="#"
-                    class="nav__link"
-                >
-                    <span class="nav__item">Log out</span>
-                </a>
+                <form action="{{ url_for('pages.logout') }}" method="post" class="nav__link">
+                    <input type="submit" value="Log out" class="nav__item nav__button">
+                </form>
             {% endif %}
             <a href="{{ url_for('pages.toggle_theme', current_page=request.path) }}"
             class="nav__link">
