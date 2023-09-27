@@ -55,7 +55,7 @@ def register():
             email=form.email.data,
             password=pbkdf2_sha256.hash(form.password.data),
         )
-        current_app.db.user.insert_one(asdict(user))
+        #current_app.db.user.insert_one(asdict(user))
 
         current_app.queue.enqueue('movie_library.tasks.send_user_registration_email', user.email)
 

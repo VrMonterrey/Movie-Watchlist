@@ -17,6 +17,7 @@ email-validator = "^2.0.0.post2"
 passlib = "^1.7.4"
 requests = "^2.31.0"
 rq = "^1.15.1"
+gunicorn = "^21.2.0"
 
 
 [build-system]
