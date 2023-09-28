@@ -25,10 +25,10 @@ def send_simple_message(to, subject, body, html):
             "html": html})
 
 
-def send_user_registration_email(email):
+def send_user_registration_email(user):
     return send_simple_message(
-        email,
+        user.email,
         "Successfully signed up",
-        f"Hi {email}! You have successfully signed up to the Movie Watchlist.",
-        render_template("email/action.html", email=email)
+        f"Hi {user.name} {user.surname}! You have successfully signed up to the Movie Watchlist.",
+        render_template("email/action.html", name=user.name, surname=user.surname)
         )

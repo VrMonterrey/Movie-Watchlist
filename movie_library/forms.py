@@ -7,7 +7,11 @@ from wtforms import (
     URLField,
     PasswordField,
 )
-from wtforms.validators import InputRequired, NumberRange, Email, Length, EqualTo
+from wtforms.validators import InputRequired, NumberRange, Email, Length, EqualTo, ValidationError
+
+def validate_alpha(form, field):
+    if not field.data.isalpha():
+        raise ValidationError('This field must contain only letters from a to z.')
 
 
 class MovieForm(FlaskForm):
@@ -52,6 +56,14 @@ class ExtendedMovieForm(MovieForm):
 
 class RegisterForm(FlaskForm):
     email = StringField("Email", validators=[InputRequired(), Email()])
+    name = StringField("Name", validators=[InputRequired(), validate_alpha, Length(
+                max=50,
+                message="This field must be less than 50 characters long",
+            )])
+    surname = StringField("Surname", validators=[InputRequired(), validate_alpha,Length(
+                max=50,
+                message="This field must be less than 50 characters long",
+            )])
     password = PasswordField(
         "Password",
         validators=[

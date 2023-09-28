@@ -52,12 +52,14 @@ def register():
     if form.validate_on_submit():
         user = User(
             _id=uuid.uuid4().hex,
+            name=form.name.data,
+            surname=form.surname.data,
             email=form.email.data,
             password=pbkdf2_sha256.hash(form.password.data),
         )
         current_app.db.user.insert_one(asdict(user))
 
-        current_app.queue.enqueue('movie_library.tasks.send_user_registration_email', user.email)
+        current_app.queue.enqueue('movie_library.tasks.send_user_registration_email', user)
 
         flash("User registered successfully", "success")
 

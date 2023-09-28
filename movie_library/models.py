@@ -20,6 +20,8 @@ class Movie:
 @dataclass
 class User:
     _id: str
+    name: str
+    surname: str
     email: str
     password: str
     movies: list[str] = field(default_factory=list)
